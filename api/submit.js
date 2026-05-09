@@ -31,11 +31,12 @@ export default async function handler(req, res) {
     return res.status(405).json({ ok: false, error: "Method not allowed" });
   }
 
-  const webAppUrl = process.env.APPS_SCRIPT_WEB_APP_URL;
-  if (!webAppUrl || !String(webAppUrl).trim()) {
+  const webAppUrl = process.env.APPS_SCRIPT_WEB_APP_URL?.trim();
+  if (!webAppUrl) {
     return res.status(500).json({
       ok: false,
-      error: "Server missing APPS_SCRIPT_WEB_APP_URL",
+      error:
+        "Server missing APPS_SCRIPT_WEB_APP_URL. In Vercel open this project → Settings → Environment Variables: add key APPS_SCRIPT_WEB_APP_URL (your Apps Script /exec URL), enable Production, Save, then Deployments → Redeploy.",
     });
   }
 
