@@ -18,6 +18,9 @@ export const FA_NAMES = [
 
 export const ALLIANCES = ["LDF", "NDA", "UDF"];
 
+/** 2021 vote dropdown includes NA (not applicable / did not vote / refused, etc.). */
+export const VOTE_2021_OPTIONS = [...ALLIANCES, "NA"];
+
 /**
  * When 2021 ≠ 2026, reasons for the 2026 choice.
  * UDF / LDF / NDA match Google Form "Post Poll Survey_Kerala 2026 May".

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ALLIANCES, FA_NAMES, REASONS_BY_2026 } from "./surveyConfig";
+import { ALLIANCES, FA_NAMES, REASONS_BY_2026, VOTE_2021_OPTIONS } from "./surveyConfig";
 import "./App.css";
 
 const initialErrors = () => ({
@@ -340,7 +340,7 @@ export default function App() {
                   }}
                 >
                   <option value="">Select alliance</option>
-                  {ALLIANCES.map((a) => (
+                  {VOTE_2021_OPTIONS.map((a) => (
                     <option key={a} value={a}>
                       {a}
                     </option>
