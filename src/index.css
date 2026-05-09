@@ -1,0 +1,25 @@
+:root {
+  --purple: #673ab7;
+  --purple-dark: #512da8;
+  --purple-light: #ede7f6;
+  --border: #d1c4e9;
+  --text: #202124;
+  --muted: #5f6368;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Google Sans", Roboto, Arial, sans-serif;
+  background: var(--purple-light);
+  color: var(--text);
+  line-height: 1.5;
+}
+
+#root {
+  min-height: 100vh;
+}
