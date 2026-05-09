@@ -149,7 +149,12 @@ function formatReasonDetail_(reason) {
 }
 
 function rowFromPayload_(body) {
-  var ts = new Date().toISOString();
+  /** Human-readable time in India (IST); avoids raw ISO strings in the sheet. */
+  var ts = Utilities.formatDate(
+    new Date(),
+    "Asia/Kolkata",
+    "dd/MM/yyyy HH:mm:ss"
+  );
   var switched = Boolean(body.switched);
   var faName = String(body.faName || "").trim();
   var acNumber = String(body.acNumber || "").trim();
