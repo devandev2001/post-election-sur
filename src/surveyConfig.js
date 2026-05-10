@@ -32,6 +32,7 @@ export const REASONS_BY_2026 = {
     { id: "welfare_udf", label: "Welfare And Freebies Promises By UDF" },
     { id: "minority_consolidation", label: "Minority Consolidation" },
     { id: "defeat_bjp", label: "To Defeat BJP" },
+    { id: "good_candidate", label: "GOOD CANDIDATE" },
     { id: "other", label: "Other", other: true },
   ],
   LDF: [
@@ -39,6 +40,7 @@ export const REASONS_BY_2026 = {
     { id: "good_leadership", label: "Good Leadership" },
     { id: "influence_candidate", label: "Influence Of The Candidate" },
     { id: "defeat_bjp", label: "To Defeat BJP" },
+    { id: "good_candidate", label: "GOOD CANDIDATE" },
     { id: "other", label: "Other", other: true },
   ],
   /** Shown when 2026 = NDA and vote changed — matches form section "Why NDA?" */
@@ -49,6 +51,7 @@ export const REASONS_BY_2026 = {
     { id: "manifesto", label: "Manifesto" },
     { id: "need_change", label: "Need For A Change" },
     { id: "modi_factor", label: "Modi Factor" },
+    { id: "good_candidate", label: "GOOD CANDIDATE" },
     { id: "other", label: "Other", other: true },
   ],
 };
