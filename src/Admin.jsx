@@ -125,8 +125,10 @@ export default function Admin() {
         <section className="admin-card admin-login">
           <h2>Sign in</h2>
           <p className="admin-login-hint">
-            Use the same <strong>ADMIN_TOKEN</strong> value set in Vercel (and
-            <code> .env.local</code> for local dev). This is not your Google password.
+            Enter the <strong>ADMIN_TOKEN</strong> from Vercel or{" "}
+            <code>.env.local</code> (local). On the server,{" "}
+            <code>APPS_SCRIPT_ADMIN_SECRET</code> must match the Apps Script property{" "}
+            <code>ADMIN_SECRET</code> or the sheet list will fail after sign-in.
           </p>
           <form onSubmit={handleUnlock}>
             <label className="admin-label" htmlFor="adminToken">
