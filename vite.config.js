@@ -1,5 +1,9 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
+
+const rootDir = path.dirname(fileURLToPath(import.meta.url));
 
 function readRequestBody(req) {
   return new Promise((resolve, reject) => {
@@ -27,7 +31,13 @@ function localAppsScriptProxy(env) {
           if (!adminToken || bearer !== adminToken) {
             res.statusCode = 401;
             res.setHeader("Content-Type", "application/json");
-            res.end(JSON.stringify({ ok: false, error: "Unauthorized" }));
+            res.end(
+              JSON.stringify({
+                ok: false,
+                error:
+                  "Wrong admin token. Use the exact ADMIN_TOKEN from .env.local (restart npm run dev after editing).",
+              })
+            );
             return;
           }
           const webAppUrl = env.APPS_SCRIPT_WEB_APP_URL?.trim();
@@ -59,9 +69,44 @@ function localAppsScriptProxy(env) {
           try {
             const r = await fetch(listUrl, { method: "GET", redirect: "follow" });
             const text = await r.text();
-            res.statusCode = r.status;
+            let out;
+            try {
+              out = JSON.parse(text);
+            } catch {
+              res.statusCode = 502;
+              res.setHeader("Content-Type", "application/json");
+              res.end(
+                JSON.stringify({
+                  ok: false,
+                  error: "Apps Script returned non-JSON (check Web App URL / deployment).",
+                })
+              );
+              return;
+            }
+            if (!out.ok) {
+              const listErr =
+                out.error === "Unauthorized"
+                  ? "Sheet list denied: in Apps Script → Project settings → Script properties, add ADMIN_SECRET with the exact same value as APPS_SCRIPT_ADMIN_SECRET in .env.local, then Deploy → Manage deployments → New version."
+                  : out.error || "Apps Script error";
+              res.statusCode = 403;
+              res.setHeader("Content-Type", "application/json");
+              res.end(JSON.stringify({ ok: false, error: listErr }));
+              return;
+            }
+            if (!r.ok) {
+              res.statusCode = 502;
+              res.setHeader("Content-Type", "application/json");
+              res.end(
+                JSON.stringify({
+                  ok: false,
+                  error: out.error || text || "Apps Script HTTP error",
+                })
+              );
+              return;
+            }
+            res.statusCode = 200;
             res.setHeader("Content-Type", "application/json");
-            res.end(text);
+            res.end(JSON.stringify(out));
           } catch (e) {
             res.statusCode = 500;
             res.setHeader("Content-Type", "application/json");
@@ -222,7 +267,7 @@ function localAppsScriptProxy(env) {
 }
 
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), "");
+  const env = loadEnv(mode, rootDir, "");
   return {
     plugins: [react(), localAppsScriptProxy(env)],
   };

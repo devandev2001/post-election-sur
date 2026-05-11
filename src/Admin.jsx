@@ -33,7 +33,7 @@ export default function Admin() {
     setError("");
     try {
       const res = await fetch("/api/sheet", {
-        headers: { Authorization: `Bearer ${authToken}` },
+        headers: { Authorization: `Bearer ${String(authToken).trim()}` },
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.ok) {
@@ -77,11 +77,12 @@ export default function Admin() {
 
   function handleUnlock(e) {
     e.preventDefault();
-    if (!token.trim()) {
+    const t = token.trim();
+    if (!t) {
       setError("Enter admin token.");
       return;
     }
-    void load(token.trim());
+    void load(t);
   }
 
   function handleRefresh() {

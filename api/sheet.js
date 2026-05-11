@@ -28,7 +28,8 @@ export default async function handler(req, res) {
   if (!adminToken || bearer !== adminToken) {
     return res.status(401).json({
       ok: false,
-      error: "Unauthorized — set ADMIN_TOKEN on the server and send Authorization: Bearer <token>.",
+      error:
+        "Wrong admin token — use the exact ADMIN_TOKEN from Vercel env (or .env.local locally).",
     });
   }
 
@@ -73,10 +74,17 @@ export default async function handler(req, res) {
         error: "Apps Script returned non-JSON",
       });
     }
-    if (!r.ok || !out.ok) {
-      return res.status(r.ok ? 400 : 502).json({
+    if (!out.ok) {
+      const msg =
+        out.error === "Unauthorized"
+          ? "Sheet list denied: set Apps Script Script property ADMIN_SECRET to match APPS_SCRIPT_ADMIN_SECRET (Vercel env), then redeploy the Web App."
+          : out.error || "Apps Script error";
+      return res.status(403).json({ ok: false, error: msg });
+    }
+    if (!r.ok) {
+      return res.status(502).json({
         ok: false,
-        error: out.error || text || "Apps Script error",
+        error: out.error || text || "Apps Script HTTP error",
       });
     }
     return res.status(200).json(out);
