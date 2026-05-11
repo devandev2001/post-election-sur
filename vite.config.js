@@ -18,6 +18,60 @@ function localAppsScriptProxy(env) {
       server.middlewares.use(async (req, res, next) => {
         const path = req.url?.split("?")[0];
 
+        if (path === "/api/sheet" && req.method === "GET") {
+          const adminToken = env.ADMIN_TOKEN?.trim();
+          const authRaw =
+            req.headers.authorization || req.headers.Authorization || "";
+          const m = typeof authRaw === "string" && authRaw.match(/^Bearer\s+(.+)$/i);
+          const bearer = m ? m[1].trim() : null;
+          if (!adminToken || bearer !== adminToken) {
+            res.statusCode = 401;
+            res.setHeader("Content-Type", "application/json");
+            res.end(JSON.stringify({ ok: false, error: "Unauthorized" }));
+            return;
+          }
+          const webAppUrl = env.APPS_SCRIPT_WEB_APP_URL?.trim();
+          const adminSecret = env.APPS_SCRIPT_ADMIN_SECRET?.trim();
+          if (!webAppUrl || !adminSecret) {
+            res.statusCode = 500;
+            res.setHeader("Content-Type", "application/json");
+            res.end(
+              JSON.stringify({
+                ok: false,
+                error:
+                  "Missing APPS_SCRIPT_WEB_APP_URL or APPS_SCRIPT_ADMIN_SECRET in .env.local",
+              })
+            );
+            return;
+          }
+          let listUrl;
+          try {
+            const u = new URL(webAppUrl);
+            u.searchParams.set("action", "list");
+            u.searchParams.set("adminSecret", adminSecret);
+            listUrl = u.toString();
+          } catch {
+            res.statusCode = 500;
+            res.setHeader("Content-Type", "application/json");
+            res.end(JSON.stringify({ ok: false, error: "Invalid web app URL" }));
+            return;
+          }
+          try {
+            const r = await fetch(listUrl, { method: "GET", redirect: "follow" });
+            const text = await r.text();
+            res.statusCode = r.status;
+            res.setHeader("Content-Type", "application/json");
+            res.end(text);
+          } catch (e) {
+            res.statusCode = 500;
+            res.setHeader("Content-Type", "application/json");
+            res.end(
+              JSON.stringify({ ok: false, error: e?.message || "Proxy failed" })
+            );
+          }
+          return;
+        }
+
         if (path === "/api/warmup" && req.method === "GET") {
           const webAppUrl = env.APPS_SCRIPT_WEB_APP_URL?.trim();
           if (!webAppUrl) {

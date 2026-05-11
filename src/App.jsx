@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { ALLIANCES, FA_NAMES, REASONS_BY_2026, VOTE_2021_OPTIONS } from "./surveyConfig";
 import "./App.css";
 
@@ -195,7 +196,12 @@ export default function App() {
   if (done) {
     return (
       <div className="wrap">
-        <h1>Voting pattern</h1>
+        <header className="page-header page-header--row">
+          <h1 style={{ margin: 0 }}>Voting pattern</h1>
+          <Link to="/admin" className="nav-admin">
+            Admin dashboard
+          </Link>
+        </header>
         <div className="card card--done">
           <h2 className="done-title">Thank you</h2>
           {syncState === "pending" ? (
@@ -255,12 +261,17 @@ export default function App() {
 
   return (
     <div className="wrap">
-      <header className="page-header">
-        <h1>Voting pattern</h1>
-        <p className="hint">
-          <span className="req">*</span> All fields marked are required. Use the
-          dropdowns to choose each answer.
-        </p>
+      <header className="page-header page-header--row">
+        <div>
+          <h1>Voting pattern</h1>
+          <p className="hint">
+            <span className="req">*</span> All fields marked are required. Use the
+            dropdowns to choose each answer.
+          </p>
+        </div>
+        <Link to="/admin" className="nav-admin">
+          Admin dashboard
+        </Link>
       </header>
 
       <form className="form-stack" onSubmit={(e) => void handleSubmit(e)} noValidate>

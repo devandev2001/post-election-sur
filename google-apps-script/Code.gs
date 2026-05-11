@@ -1,11 +1,12 @@
 /**
- * Container-bound script: open your target sheet → Extensions → Apps Script,
- * paste this file, Save, then Deploy → New deployment → type "Web app" → Execute as: Me,
- * Who has access: Anyone (or "Anyone with Google account" if you prefer).
- * Copy the Web app URL into Vercel: APPS_SCRIPT_WEB_APP_URL
+ * Bound to your Google Sheet: Extensions → Apps Script → paste → Save → Deploy → Web app
+ * Execute as: Me | Who has access: Anyone (or stricter if you prefer)
  *
- * Optional: Script settings → Project Settings → Script properties → add SUBMIT_SECRET
- * and the same value in Vercel APPS_SCRIPT_SUBMIT_SECRET (proxied server-side only).
+ * Script properties (Project settings → Script properties):
+ *   SUBMIT_SECRET     — optional; must match Vercel APPS_SCRIPT_SUBMIT_SECRET for POST writes
+ *   ADMIN_SECRET      — required for GET ?action=list; must match Vercel APPS_SCRIPT_ADMIN_SECRET
+ *
+ * Vercel env: APPS_SCRIPT_WEB_APP_URL, APPS_SCRIPT_SUBMIT_SECRET (optional), APPS_SCRIPT_ADMIN_SECRET, ADMIN_TOKEN
  */
 
 var SHEET_HEADERS = [
@@ -24,17 +25,60 @@ var TAB_NAME = "Sheet1";
 /** DocumentProperties = per spreadsheet; avoids re-reading row 1 on every POST. */
 var HEADERS_FLAG = "SURVEY_HEADERS_V1";
 
-/**
- * Opening the /exec URL in a browser sends GET. Warms the instance; submissions use POST.
- */
-function doGet() {
+function doGet(e) {
+  var action = "";
+  if (e && e.parameter && e.parameter.action) {
+    action = String(e.parameter.action);
+  }
+  if (action === "list") {
+    return handleList_(e);
+  }
   return ContentService.createTextOutput(
     JSON.stringify({
       ok: true,
       message:
-        "Survey webhook is running. The form sends data with POST (JSON), not by opening this link.",
+        "Survey webhook is running. Submissions use POST (JSON). Admin list uses GET ?action=list&adminSecret=…",
     })
   ).setMimeType(ContentService.MimeType.JSON);
+}
+
+function handleList_(e) {
+  var provided = "";
+  if (e && e.parameter && e.parameter.adminSecret) {
+    provided = String(e.parameter.adminSecret);
+  }
+  var expected = PropertiesService.getScriptProperties().getProperty("ADMIN_SECRET");
+  if (!expected || String(expected) !== provided) {
+    return jsonOut_({ ok: false, error: "Unauthorized" });
+  }
+
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName(TAB_NAME);
+    if (!sheet) {
+      sheet = ss.getSheets()[0];
+    }
+    var range = sheet.getDataRange();
+    var data = range.getValues();
+    if (!data || data.length === 0) {
+      return jsonOut_({ ok: true, columns: SHEET_HEADERS, rows: [], rowCount: 0 });
+    }
+
+    var columns = data[0];
+    var rows = [];
+    var r;
+    for (r = 1; r < data.length; r++) {
+      rows.push(data[r]);
+    }
+    return jsonOut_({
+      ok: true,
+      columns: columns,
+      rows: rows,
+      rowCount: rows.length,
+    });
+  } catch (err) {
+    return jsonOut_({ ok: false, error: err.message || String(err) });
+  }
 }
 
 function doPost(e) {
@@ -149,7 +193,6 @@ function formatReasonDetail_(reason) {
 }
 
 function rowFromPayload_(body) {
-  /** Human-readable time in India (IST); avoids raw ISO strings in the sheet. */
   var ts = Utilities.formatDate(
     new Date(),
     "Asia/Kolkata",

@@ -8,6 +8,29 @@
   margin-bottom: 20px;
 }
 
+.page-header--row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px 20px;
+}
+
+.nav-admin {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--purple);
+  text-decoration: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 2px solid var(--border);
+  white-space: nowrap;
+}
+
+.nav-admin:hover {
+  background: var(--purple-light);
+}
+
 h1 {
   font-size: 1.625rem;
   font-weight: 500;
